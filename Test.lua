@@ -45,7 +45,7 @@ function UILibrary:CreateUI(config)
 
     local frameT = Instance.new("Frame")
     frameT.Size = UDim2.new(1, 0, 0.5, 0)
-    frameMenu.Position = UDim2.new(0, 0, 0.5, 0)
+    frameMenu.Position = UDim2.new(0, 0, 0, 15)
     frameT.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     frameT.BorderSizePixel = 0
     frameT.Parent = frameTitle
@@ -93,7 +93,7 @@ function UILibrary:CreateUI(config)
         local tabFrameT = Instance.new("ScrollingFrame")
         tabFrameT.Size = UDim2.new(0, 257, 0, 200)
         tabFrameT.Position = UDim2.new(0, 137, 0, 40)
-        tabFrameT.BackgroundTransparency = 1
+        tabFrameT.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         tabFrameT.BorderSizePixel = 0
         tabFrameT.Visible = false
         tabFrameT.Parent = frameMenu
@@ -152,6 +152,11 @@ function UILibrary:CreateUI(config)
         local U6 = U:Clone()
         U6.CornerRadius = UDim.new(0, 7)
         U6.Parent = frameButton
+        
+        local Ss = Instance.new("UIStroke")
+        Ss.Color = Color3.new(60, 60, 60)
+        Ss.Thickness = 0.5
+        Ss.parent = frameButton
 
         local button = Instance.new("TextButton")
         button.Size = UDim2.new(1, 0, 1, 0)
@@ -181,6 +186,11 @@ function UILibrary:CreateUI(config)
         
         local U3 = U:Clone()
         U3.Parent = frameToggle
+        
+        local S1 = Instance.new("UIStroke")
+        S1.Color = Color3.new(60, 60, 60)
+        S1.Thickness = 0.5
+        S1.parent = frameToggle
 
         local toggle = Instance.new("TextButton")
         toggle.Size = UDim2.new(1, 0, 1, 0)
@@ -203,6 +213,11 @@ function UILibrary:CreateUI(config)
         local U4 = U:Clone()
         U4.CornerRadius = UDim.new(0, 7)
         U4.Parent = frameOnOff
+        
+        local S = Instance.new("UIStroke")
+        S.Color = Color3.new(60, 60, 60)
+        S.Thickness = 0.5
+        S.parent = frameOnOff
 
         local indicator = Instance.new("TextLabel")
         indicator.Size = UDim2.new(1, 0, 1, 0)
@@ -212,6 +227,15 @@ function UILibrary:CreateUI(config)
         indicator.TextSize = 10
         indicator.Text = " "
         indicator.Parent = frameOnOff
+        
+        local U7 = U:Clone()
+        U7.CornerRadius = UDim.new(0, 7)
+        U7.Parent = indicator
+        
+        local S5 = Instance.new("UIStroke")
+        S5.Color = Color3.new(60, 60, 60)
+        S5.Thickness = 0.5
+        S5.parent = indicator
 
         local toggleState = false
         toggle.MouseButton1Click:Connect(function()
@@ -235,7 +259,7 @@ function UILibrary:CreateUI(config)
     FrameB.Parent = screen
     
     local u = U:Clone()
-    u.Parent = frameToggle
+    u.Parent = FrameB
 
     local Menu = Instance.new("TextButton")
     Menu.Size = UDim2.new(1, 0, 1, 0)
