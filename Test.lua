@@ -1,337 +1,215 @@
--- FluentOrionLibrary.lua
-local FluentOrionLibrary = {}
-FluentOrionLibrary.__index = FluentOrionLibrary
 
-function FluentOrionLibrary.new()
-    local self = setmetatable({}, FluentOrionLibrary)
-    return self
-end
+local UILibrary = {}
 
-function FluentOrionLibrary:CreateWindow(options)
-    local window = {}
-    window.Title = options.Title or ""
-    window.SubTitle = options.SubTitle or ""
-    window.TabWidth = options.TabWidth or 80
-    window.Size = options.Size or UDim2.fromOffset(400, 260)
-    window.Acrylic = options.Acrylic or false
-    window.Theme = options.Theme or "Darker"
-    window.Tabs = {}
-    
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+function UILibrary:CreateUI(config)
+    local tabs = {}
+    local currentTab
 
-    local frame = Instance.new("Frame")
-    frame.Size = window.Size
-    frame.BackgroundColor3 = self:GetThemeColor(window.Theme)
-    frame.BorderSizePixel = 0
-    frame.Position = UDim2.new(0.5, -window.Size.X.Offset/2, 0.5, -window.Size.Y.Offset/2)
-    frame.AnchorPoint = Vector2.new(0.5, 0.5)
-    frame.Parent = screenGui
+    -- Configurações padrão
+    config = config or {}
+    local titleText = config.title or "Título"
+    local subtitleText = config.subtitle or "Subtítulo"
+    local menuHeight = config.menuHeight or 260
+    local tabNames = config.tabs or {"Tab 1"}
 
-    if window.Acrylic then
-        local blur = Instance.new("BlurEffect")
-        blur.Parent = frame
-    end
+    -- Criar ScreenGui
+    local screen = Instance.new("ScreenGui")
+    screen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    -- Criar Frame para o menu
+    local frameMenu = Instance.new("Frame")
+    frameMenu.Size = UDim2.new(0, 400, 0, menuHeight)
+    frameMenu.Position = UDim2.new(0.5, 0, 0.5, 0)
+    frameMenu.AnchorPoint = Vector2.new(0.5, 0.5)
+    frameMenu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frameMenu.BorderSizePixel = 0
+    frameMenu.Visible = false
+    frameMenu.Active = true
+    frameMenu.Draggable = true
+    frameMenu.Parent = screen
+
+    -- Barra de título
+    local frameTitle = Instance.new("Frame")
+    frameTitle.Size = UDim2.new(1, 0, 0, 30)
+    frameTitle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    frameTitle.BorderSizePixel = 0
+    frameTitle.Parent = frameMenu
 
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Text = window.Title
-    titleLabel.Size = UDim2.new(1, 0, 0, 50)
+    titleLabel.Size = UDim2.new(1, 0, 0, 30)
+    titleLabel.Position = UDim2.new(0, 7, 0, 0)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 24
-    titleLabel.Parent = frame
+    titleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+    titleLabel.Text = titleText
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = frameTitle
 
-    local subTitleLabel = Instance.new("TextLabel")
-    subTitleLabel.Text = window.SubTitle
-    subTitleLabel.Size = UDim2.new(1, 0, 0, 30)
-    subTitleLabel.Position = UDim2.new(0, 0, 0, 50)
-    subTitleLabel.BackgroundTransparency = 1
-    subTitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    subTitleLabel.Font = Enum.Font.Gotham
-    subTitleLabel.TextSize = 14
-    subTitleLabel.Parent = frame
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Size = UDim2.new(1, 0, 0, 30)
+    subtitleLabel.Position = UDim2.new(0, 87, 0, 0)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    subtitleLabel.Text = subtitleText
+    subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    subtitleLabel.Parent = frameTitle
 
-    window.Frame = frame
-    
-    if options.KeySystem then
-        self:CreateKeySystem(window, options.KeySettings)
-    end
+    -- Barra de abas
+    local tabBar = Instance.new("Frame")
+    tabBar.Size = UDim2.new(0, 120, 0, menuHeight - 60)
+    tabBar.Position = UDim2.new(0, 10, 0, 40)
+    tabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    tabBar.BorderSizePixel = 0
+    tabBar.Parent = frameMenu
 
-    return window
-end
+    -- Criar abas
+    for i, tabName in ipairs(tabNames) do
+        local buttonTab = Instance.new("TextButton")
+        buttonTab.Size = UDim2.new(0, 107, 0, 25)
+        buttonTab.Position = UDim2.new(0, 7, 0, 7 + (i - 1) * 32)
+        buttonTab.BackgroundTransparency = 1
+        buttonTab.Text = tabName
+        buttonTab.TextScaled = true
+        buttonTab.TextColor3 = Color3.fromRGB(240, 240, 240)
+        buttonTab.Parent = tabBar
 
-function FluentOrionLibrary:AddTab(window, options)
-    local tab = {}
-    tab.Title = options.Title or "Tab"
-    tab.Icon = options.Icon or ""
-    tab.Elements = {}
+        -- Criar ScrollingFrame para cada aba
+        local tabFrame = Instance.new("ScrollingFrame")
+        tabFrame.Size = UDim2.new(0, 257, 0, menuHeight - 60)
+        tabFrame.Position = UDim2.new(0, 137, 0, 40)
+        tabFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        tabFrame.BorderSizePixel = 0
+        tabFrame.ScrollBarThickness = 6
+        tabFrame.CanvasSize = UDim2.new(0, 0, 1, 0)
+        tabFrame.HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+        tabFrame.Visible = false
+        tabFrame.Parent = frameMenu
 
-    local tabButton = Instance.new("TextButton")
-    tabButton.Text = tab.Title
-    tabButton.Size = UDim2.new(0, window.TabWidth, 0, 50)
-    tabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tabButton.Font = Enum.Font.Gotham
-    tabButton.TextSize = 14
-    tabButton.Parent = window.Frame
-
-    if tab.Icon ~= "" then
-        local icon = Instance.new("ImageLabel")
-        icon.Image = "rbxassetid://" .. tab.Icon
-        icon.Size = UDim2.new(0, 24, 0, 24)
-        icon.Position = UDim2.new(0, 5, 0.5, -12)
-        icon.BackgroundTransparency = 1
-        icon.Parent = tabButton
-    end
-
-    tab.Button = tabButton
-    table.insert(window.Tabs, tab)
-    return tab
-end
-
-function FluentOrionLibrary:CreateButton(tab, text, callback)
-    local button = Instance.new("TextButton")
-    button.Text = text
-    button.Size = UDim2.new(0, 200, 0, 50)
-    button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.Gotham
-    button.TextSize = 14
-    button.Parent = tab.Button
-
-    button.MouseButton1Click:Connect(function()
-        if callback then
-            callback()
-        end
-    end)
-
-    table.insert(tab.Elements, button)
-    return button
-end
-
-function FluentOrionLibrary:CreateLabel(tab, text)
-    local label = Instance.new("TextLabel")
-    label.Text = text
-    label.Size = UDim2.new(0, 200, 0, 50)
-    label.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 14
-    label.Parent = tab.Button
-
-    table.insert(tab.Elements, label)
-    return label
-end
-
-function FluentOrionLibrary:CreateSlider(tab, min, max, callback)
-    local slider = Instance.new("Frame")
-    slider.Size = UDim2.new(0, 200, 0, 50)
-    slider.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    slider.Parent = tab.Button
-
-    local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, 0, 0.2, 0)
-    sliderBar.Position = UDim2.new(0, 0, 0.5, -10)
-    sliderBar.BackgroundColor3 = Color3.new(1, 1, 1)
-    sliderBar.Parent = slider
-
-    local knob = Instance.new("Frame")
-    knob.Size = UDim2.new(0, 20, 0, 20)
-    knob.Position = UDim2.new(0, 0, 0.5, -10)
-    knob.BackgroundColor3 = Color3.new(0, 0, 0)
-    knob.Parent = sliderBar
-
-    -- Adicione lógica para mover o knob e ajustar o valor do slider
-
-    table.insert(tab.Elements, slider)
-    return slider
-end
-
-function FluentOrionLibrary:CreateDropdown(tab, text, options, callback)
-    local dropdown = Instance.new("Frame")
-    dropdown.Size = UDim2.new(0, 200, 0, 50)
-    dropdown.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    dropdown.Parent = tab.Button
-
-    local dropdownButton = Instance.new("TextButton")
-    dropdownButton.Text = text
-    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
-    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropdownButton.Font = Enum.Font.Gotham
-    dropdownButton.TextSize = 14
-    dropdownButton.Parent = dropdown
-
-    local dropdownList = Instance.new("Frame")
-    dropdownList.Size = UDim2.new(1, 0, 0, #options * 50)
-    dropdownList.Position = UDim2.new(0, 0, 1, 0)
-    dropdownList.Visible = false
-    dropdownList.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    dropdownList.Parent = dropdown
-
-    dropdownButton.MouseButton1Click:Connect(function()
-        dropdownList.Visible = not dropdownList.Visible
-    end)
-
-    for i, option in ipairs(options) do
-        local optionButton = Instance.new("TextButton")
-        optionButton.Text = option
-        optionButton.Size = UDim2.new(1, 0, 0, 50)
-        optionButton.Position = UDim2.new(0, 0, 0, (i - 1) * 50)
-        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        optionButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-        optionButton.Font = Enum.Font.Gotham
-        optionButton.TextSize = 14
-        optionButton.Parent = dropdownList
-
-        optionButton.MouseButton1Click:Connect(function()
-            if callback then
-                callback(option)
+        -- Associar aba ao botão
+        tabs[tabName] = tabFrame
+        buttonTab.MouseButton1Click:Connect(function()
+            if currentTab then
+                currentTab.Visible = false
             end
-            dropdownButton.Text = text .. ": " .. option
-            dropdownList.Visible = false
+            tabFrame.Visible = true
+            currentTab = tabFrame
         end)
     end
 
-    table.insert(tab.Elements, dropdown)
-    return dropdown
-end
+    -- Mostrar a primeira aba por padrão
+    currentTab = tabs[tabNames[1]]
+    currentTab.Visible = true
 
-function FluentOrionLibrary:CreateToggle(tab, text, callback)
-    local toggle = Instance.new("Frame")
-    toggle.Size = UDim2.new(0, 200, 0, 50)
-    toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    toggle.Parent = tab.Button
+    -- Funções para adicionar elementos
+    function self:AddSection(tabName, sectionText)
+        local sectionLabel = Instance.new("TextLabel")
+        sectionLabel.Size = UDim2.new(1, 0, 0, 30)
+        sectionLabel.Position = UDim2.new(0, 7, 0, 7)
+        sectionLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+        sectionLabel.BackgroundTransparency = 1
+        sectionLabel.TextSize = 15
+        sectionLabel.Text = sectionText
+        sectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+        sectionLabel.Parent = tabs[tabName]
+    end
 
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Text = text
-    toggleButton.Size = UDim2.new(1, 0, 1, 0)
-    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleButton.Font = Enum.Font.Gotham
-    toggleButton.TextSize = 14
-    toggleButton.Parent = toggle
+    function self:AddButton(tabName, buttonText, Callback)
+        local frameButton = Instance.new("Frame")
+        frameButton.Size = UDim2.new(0, 242, 0, 30)
+        frameButton.Position = UDim2.new(0, 7, 0, 37)
+        frameButton.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+        frameButton.BorderSizePixel = 0
+        frameButton.Parent = tabs[tabName]
 
-    local isEnabled = false
+        local button = Instance.new("TextButton")
+        button.Size = UDim2.new(1, 0, 1, 0)
+        button.Position = UDim2.new(0, 7, 0, 0)
+        button.TextColor3 = Color3.fromRGB(240, 240, 240)
+        button.BackgroundTransparency = 1
+        button.TextStrokeTransparency = 1
+        button.TextSize = 15
+        button.Text = buttonText
+        button.TextXAlignment = Enum.TextXAlignment.Left
+        button.Parent = frameButton
 
-    toggleButton.MouseButton1Click:Connect(function()
-        isEnabled = not isEnabled
-        toggleButton.Text = text .. ": " .. (isEnabled and "On" or "Off")
-        if callback then
-            callback(isEnabled)
-        end
-    end)
-
-    table.insert(tab.Elements, toggle)
-    return toggle
-end
-
-function FluentOrionLibrary:CreateKeySystem(window, settings)
-    local keySystemFrame = Instance.new("Frame")
-    keySystemFrame.Size = UDim2.new(1, 0, 1, 0)
-    keySystemFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    keySystemFrame.Parent = window.Frame
-
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Text = settings.Title or "Enter Key"
-    titleLabel.Size = UDim2.new(1, 0, 0, 50)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 24
-    titleLabel.Parent = keySystemFrame
-
-    local subtitleLabel = Instance.new("TextLabel")
-    subtitleLabel.Text = settings.Subtitle or ""
-    subtitleLabel.Size = UDim2.new(1, 0, 0, 30)
-    subtitleLabel.Position = UDim2.new(0, 0, 0, 50)
-    subtitleLabel.BackgroundTransparency = 1
-    subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    subtitleLabel.Font = Enum.Font.Gotham
-    subtitleLabel.TextSize = 14
-    subtitleLabel.Parent = keySystemFrame
-
-    local noteLabel = Instance.new("TextLabel")
-    noteLabel.Text = settings.Note or ""
-    noteLabel.Size = UDim2.new(1, 0, 0, 30)
-    noteLabel.Position = UDim2.new(0, 0, 0, 80)
-    noteLabel.BackgroundTransparency = 1
-    noteLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    noteLabel.Font = Enum.Font.Gotham
-    noteLabel.TextSize = 14
-    noteLabel.Parent = keySystemFrame
-
-    local keyBox = Instance.new("TextBox")
-    keyBox.PlaceholderText = "Enter your key here..."
-    keyBox.Size = UDim2.new(0.8, 0, 0, 50)
-    keyBox.Position = UDim2.new(0.1, 0, 0, 120)
-    keyBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    keyBox.Font = Enum.Font.Gotham
-    keyBox.TextSize = 14
-    keyBox.Text = ""
-    keyBox.ClearTextOnFocus = false
-    keyBox.Parent = keySystemFrame
-
-    local submitButton = Instance.new("TextButton")
-    submitButton.Text = "Submit Key"
-    submitButton.Size = UDim2.new(0.8, 0, 0, 50)
-    submitButton.Position = UDim2.new(0.1, 0, 0, 180)
-    submitButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    submitButton.Font = Enum.Font.Gotham
-    submitButton.TextSize = 14
-    submitButton.Parent = keySystemFrame
-
-    submitButton.MouseButton1Click:Connect(function()
-        local enteredKey = keyBox.Text
-        for _, key in ipairs(settings.Key) do
-            if enteredKey == key then
-                if settings.SaveKey then
-                    self:SaveKey(settings.FileName, enteredKey)
-                end
-                keySystemFrame:Destroy()
-                return
+        button.MouseButton1Click:Connect(function()
+            if Callback then
+                Callback()
             end
-        end
-        keyBox.Text = "Invalid Key"
+        end)
+    end
+
+    function self:AddToggle(tabName, toggleText, Callback)
+        local frameToggle = Instance.new("Frame")
+        frameToggle.Size = UDim2.new(0, 242, 0, 30)
+        frameToggle.Position = UDim2.new(0, 7, 0, 77)
+        frameToggle.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+        frameToggle.BorderSizePixel = 0
+        frameToggle.Parent = tabs[tabName]
+
+        local toggle = Instance.new("TextButton")
+        toggle.Size = UDim2.new(1, 0, 1, 0)
+        toggle.Position = UDim2.new(0, 7, 0, 0)
+        toggle.TextColor3 = Color3.fromRGB(240, 240, 240)
+        toggle.BackgroundTransparency = 1
+        toggle.TextStrokeTransparency = 1
+        toggle.TextSize = 15
+        toggle.Text = toggleText
+        toggle.TextXAlignment = Enum.TextXAlignment.Left
+        toggle.Parent = frameToggle
+
+        local frameOnOff = Instance.new("Frame")
+        frameOnOff.Size = UDim2.new(0, 20, 0, 20)
+        frameOnOff.Position = UDim2.new(0, 213, 0, 5)
+        frameOnOff.BackgroundColor3 = Color3.fromRGB(23, 23, 23)
+        frameOnOff.BorderSizePixel = 0
+        frameOnOff.Parent = frameToggle
+
+        local indicator = Instance.new("TextLabel")
+        indicator.Size = UDim2.new(1, 0, 1, 0)
+        indicator.Position = UDim2.new(0, 0, 0, 0)
+        indicator.TextColor3 = Color3.fromRGB(240, 240, 240)
+        indicator.BackgroundTransparency = 1
+        indicator.TextSize = 10
+        indicator.Text = " "
+        indicator.Parent = frameOnOff
+
+        local toggleState = false
+        toggle.MouseButton1Click:Connect(function()
+            toggleState = not toggleState
+            indicator.Text = toggleState and "✓" or " "
+            if Callback then
+                Callback(toggleState)
+            end
+        end)
+    end
+
+    -- Botão para abrir/fechar o menu
+    local FrameB = Instance.new("Frame")
+    FrameB.Size = UDim2.new(0, 80, 0, 30)
+    FrameB.Position = UDim2.new(0, 70, 0.9, 0)
+    FrameB.AnchorPoint = Vector2.new(0.5, 0.5)
+    FrameB.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    FrameB.BorderSizePixel = 0
+    FrameB.Active = false
+    FrameB.Draggable = false
+    FrameB.Parent = screen
+
+    local Menu = Instance.new("TextButton")
+    Menu.Size = UDim2.new(1, 0, 1, 0)
+    Menu.Position = UDim2.new(0, 0, 0, 0)
+    Menu.BackgroundTransparency = 1
+    Menu.Text = "Menu"
+    Menu.TextScaled = true
+    Menu.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Menu.Parent = FrameB
+
+    local menuVisible = false
+    Menu.MouseButton1Click:Connect(function()
+        menuVisible = not menuVisible
+        frameMenu.Visible = menuVisible
     end)
 
-    if settings.Actions then
-        for _, action in ipairs(settings.Actions) do
-            local actionButton = Instance.new("TextButton")
-            actionButton.Text = action.Text
-            actionButton.Size = UDim2.new(0.8, 0, 0, 50)
-            actionButton.Position = UDim2.new(0.1, 0, 0, 240 + (_ - 1) * 60)
-            actionButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-            actionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            actionButton.Font = Enum.Font.Gotham
-            actionButton.TextSize = 14
-            actionButton.Parent = keySystemFrame
-
-            actionButton.MouseButton1Click:Connect(function()
-                if action.OnPress then
-                    action.OnPress()
-                end
-            end)
-        end
-    end
+    return self
 end
 
-function FluentOrionLibrary:SaveKey(fileName, key)
-    local folder = "AkaidoHub"
-    if not isfolder(folder) then
-        makefolder(folder)
-    end
-    writefile(folder .. "/" .. fileName .. ".txt", key)
-end
-
-function FluentOrionLibrary:GetThemeColor(theme)
-    local themes = {
-        ["Darker"] = Color3.fromRGB(45, 45, 45),
-        ["Amethyst"] = Color3.fromRGB(102, 51, 153),
-        -- Adicione mais temas conforme necessário
-    }
-    return themes[theme] or Color3.fromRGB(45, 45, 45)
-end
-
-return FluentOrionLibrary
+return UILibrary
