@@ -15,7 +15,7 @@ function NotificationLibrary:CreateNotification(options)
     -- Criar um Frame para a notificação
     local notificationFrame = Instance.new("Frame")
     notificationFrame.Size = UDim2.new(0, 120, 0, 80)
-    notificationFrame.Position = UDim2.new(1, - 130, 1, - 15)
+    notificationFrame.Position = UDim2.new(0.5, 200, 0.5, 250)
     notificationFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     notificationFrame.BorderSizePixel = 0
     notificationFrame.AnchorPoint = Vector2.new(0.5, 0)
