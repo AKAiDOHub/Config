@@ -30,7 +30,7 @@ function NotificationLibrary:CreateNotification(options)
     TitleFrame.Position = UDim2.new(0, 0, 0, 0)
     TitleFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     TitleFrame.BorderSizePixel = 0
-    TitleFrame.Parent = screenGui
+    TitleFrame.Parent = notificationFrame
     
     local uiCorner1 = Instance.new("UICorner")
     uiCorner1.CornerRadius = UDim.new(0, 18)
@@ -41,7 +41,7 @@ function NotificationLibrary:CreateNotification(options)
     TitleFrame2.Position = UDim2.new(0, 0, 0, 15)
     TitleFrame2.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     TitleFrame2.BorderSizePixel = 0
-    TitleFrame2.Parent = screenGui
+    TitleFrame2.Parent = TitleFrame
     
     -- Criar um Título
     local titleLabel = Instance.new("TextLabel")
