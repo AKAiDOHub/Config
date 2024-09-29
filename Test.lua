@@ -49,7 +49,7 @@ function NotificationLibrary:CreateNotification(options)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title
     titleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-    titleLabel.TextSize = 24
+    titleLabel.TextScaled = true
     titleLabel.Parent = TitleFrame
 
     -- Criar uma Mensagem
